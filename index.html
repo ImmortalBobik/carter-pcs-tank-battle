@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CARTERPCS // TANK ARENA</title>
+  <meta name="description" content="CarterPCs vs. White CarterPCs 2D geometric ricochet tank duel.">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="js/audio.js"></script>
+  <script defer src="js/maze.js"></script>
+  <script defer src="js/physics.js"></script>
+  <script defer src="js/ai.js"></script>
+  <script defer src="js/renderer.js"></script>
+  <script defer src="js/game.js"></script>
+</head>
+<body>
+
+  <!-- Precision Hardware Telemetry Header -->
+  <header class="hud-header" role="banner">
+    <!-- Player 1 Bay -->
+    <div class="fighter-bay cyan" id="hud-p1-card" aria-label="Player 1 CarterPCs">
+      <div class="fighter-frame">
+        <img src="assets/carter-normal.jpg" alt="CarterPCs" width="34" height="34">
+      </div>
+      <div class="fighter-readout">
+        <div class="fighter-top">
+          <span class="fighter-name">CARTERPCS</span>
+          <span class="powerup-tag" id="p1-powerup" hidden>STD</span>
+        </div>
+        <div class="score-strip">
+          <div class="pip-rack" id="p1-pips" aria-hidden="true">
+            <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
+          </div>
+          <span class="fighter-score" id="p1-score" aria-label="Player 1 Score">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Switch Deck -->
+    <div class="control-deck">
+      <div class="round-readout" id="round-indicator">R01 &middot; FT5</div>
+      <div class="deck-controls">
+        <select id="select-mode" class="deck-select" aria-label="Game Mode">
+          <option value="1p" selected>1P</option>
+          <option value="2p">2P</option>
+        </select>
+
+        <select id="select-diff" class="deck-select" aria-label="Bot Difficulty">
+          <option value="easy">EASY</option>
+          <option value="normal" selected>NORM</option>
+          <option value="chaos">CHAOS</option>
+        </select>
+
+        <button type="button" class="deck-btn" id="btn-mute" aria-label="Toggle Sound" title="Sound">
+          <span id="mute-icon" aria-hidden="true">ON</span>
+        </button>
+
+        <button type="button" class="deck-btn" id="btn-touch-toggle" aria-label="Toggle Touch Controls" title="Touch Pad">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><rect x="6" y="2" width="12" height="20"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </button>
+
+        <button type="button" class="deck-btn" id="btn-help" aria-label="Controls and Powerups" title="Controls">
+          <span aria-hidden="true">?</span>
+        </button>
+
+        <button type="button" class="deck-btn" id="btn-restart" aria-label="Restart Match" title="Restart">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Player 2 / Bot Bay -->
+    <div class="fighter-bay magenta" id="hud-p2-card" aria-label="Player 2 White CarterPCs">
+      <div class="fighter-readout fighter-readout-right">
+        <div class="fighter-top fighter-top-right">
+          <span class="powerup-tag" id="p2-powerup" hidden>STD</span>
+          <span class="fighter-name" id="p2-name-label">WHITE BOT</span>
+        </div>
+        <div class="score-strip score-strip-right">
+          <span class="fighter-score" id="p2-score" aria-label="Player 2 Score">0</span>
+          <div class="pip-rack" id="p2-pips" aria-hidden="true">
+            <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
+          </div>
+        </div>
+      </div>
+      <div class="fighter-frame fighter-frame-white">
+        <img src="assets/carter-white.jpg" alt="White CarterPCs" width="34" height="34">
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Drafting Arena -->
+  <main class="arena-main">
+    <div class="arena-wrapper" id="arena-container">
+      <canvas id="game-canvas" width="800" height="560" role="img" aria-label="CarterPCs vs White CarterPCs Tank Maze Arena"></canvas>
+
+      <div class="round-banner" id="round-banner" aria-live="polite">
+        CARTERPCS +1
+      </div>
+
+      <!-- Bespoke Hardware Spec Start Card -->
+      <div class="arena-overlay" id="start-overlay">
+        <div class="spec-card">
+          <div class="spec-card-bar">
+            <span>UNIT // TANK-02</span>
+            <span>MAZE 10&times;7</span>
+          </div>
+
+          <div class="spec-matchup">
+            <div class="spec-fighter cyan">
+              <div class="spec-photo">
+                <img src="assets/carter-normal.jpg" alt="CarterPCs" width="68" height="68">
+              </div>
+              <span class="spec-label">CARTERPCS</span>
+              <span class="spec-sub">P1 // COBALT</span>
+            </div>
+
+            <div class="spec-divider" aria-hidden="true">VS</div>
+
+            <div class="spec-fighter magenta">
+              <div class="spec-photo spec-photo-white">
+                <img src="assets/carter-white.jpg" alt="White CarterPCs" width="68" height="68">
+              </div>
+              <span class="spec-label">WHITE CARTER</span>
+              <span class="spec-sub">P2 // CRIMSON</span>
+            </div>
+          </div>
+
+          <h1 class="spec-title">RICOCHET TANK DUEL</h1>
+
+          <div class="mode-switch" role="group" aria-label="Choose game mode">
+            <button type="button" class="mode-tab selected" id="opt-mode-1p">1P VS BOT</button>
+            <button type="button" class="mode-tab" id="opt-mode-2p">2P LOCAL</button>
+          </div>
+
+          <button type="button" class="btn-deploy" id="btn-start-battle" autofocus>
+            START MATCH
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- On-screen Touch Controls -->
+    <div class="touch-controls" id="touch-controls" aria-label="Virtual Touch Controls">
+      <div class="touch-dpad">
+        <div></div>
+        <button type="button" class="touch-btn" id="tbtn-up" aria-label="Forward">&#9650;</button>
+        <div></div>
+        <button type="button" class="touch-btn" id="tbtn-left" aria-label="Turn Left">&#9664;</button>
+        <button type="button" class="touch-btn" id="tbtn-down" aria-label="Reverse">&#9660;</button>
+        <button type="button" class="touch-btn" id="tbtn-right" aria-label="Turn Right">&#9654;</button>
+      </div>
+
+      <button type="button" class="touch-fire-btn" id="tbtn-fire" aria-label="Fire">
+        FIRE
+      </button>
+    </div>
+  </main>
+
+  <!-- Quiet Hardware Legend -->
+  <footer class="hud-footer">
+    <span>DRIVE: WASD / ARROWS &middot; FIRE: SPACE / ENTER &middot; PAUSE: P &middot; RESET: R</span>
+  </footer>
+
+  <!-- Help Dialog -->
+  <dialog id="help-dialog" closedby="any" aria-labelledby="help-title">
+    <div class="dialog-header">
+      <h2 class="dialog-title" id="help-title">MANUAL // CONTROLS</h2>
+    </div>
+
+    <div class="dialog-body">
+      <p>Shots ricochet up to 18 times off walls. After a brief spawn grace or first bounce, your own shots can hit you.</p>
+
+      <ul class="help-list">
+        <li><strong>1P:</strong> <span class="kbd-key">WASD</span> or <span class="kbd-key">ARROWS</span> move &middot; <span class="kbd-key">SPACE</span> / <span class="kbd-key">ENTER</span> fire</li>
+        <li><strong>2P:</strong> P1 <span class="kbd-key">WASD</span> + <span class="kbd-key">SPACE</span> &middot; P2 <span class="kbd-key">ARROWS</span> + <span class="kbd-key">ENTER</span></li>
+        <li><strong>SYS:</strong> <span class="kbd-key">P</span> / <span class="kbd-key">ESC</span> pause &middot; <span class="kbd-key">R</span> restart</li>
+      </ul>
+
+      <div class="powerup-guide-grid">
+        <div class="guide-card">
+          <div class="guide-card-header">RTX BURST</div>
+          <div class="guide-card-desc">3-way spread ricochet</div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-header">VEG-OIL SHIELD</div>
+          <div class="guide-card-desc">Absorbs 1 direct hit</div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-header">WATER LASER</div>
+          <div class="guide-card-desc">Fast beam + 5-bounce sight</div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-header">RGB NITRO</div>
+          <div class="guide-card-desc">High-speed drive</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <form method="dialog">
+        <button type="submit" class="btn-dialog-close" autofocus>CLOSE</button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Match Victory Dialog -->
+  <dialog id="gameover-dialog" aria-labelledby="gameover-title">
+    <div class="dialog-header">
+      <h2 class="dialog-title" id="gameover-title">MATCH RESULT</h2>
+    </div>
+
+    <div class="dialog-body">
+      <div class="victory-badge">
+        <h3 class="victory-headline" id="gameover-winner-text">CARTERPCS WINS</h3>
+        <p class="victory-quip" id="gameover-quip-text">"No snooze fest!"</p>
+      </div>
+
+      <div class="victory-stats-row">
+        <div class="stat-block">
+          <span class="stat-value" id="stat-final-score">5 - 3</span>
+          <span class="stat-label">SCORE</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value" id="stat-total-rounds">8</span>
+          <span class="stat-label">ROUNDS</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value" id="stat-bounce-kills">4</span>
+          <span class="stat-label">BANK KILLS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <form method="dialog">
+        <button type="submit" id="btn-gameover-playagain" class="btn-dialog-close" autofocus>REMATCH</button>
+      </form>
+    </div>
+  </dialog>
+
+</body>
+</html>
